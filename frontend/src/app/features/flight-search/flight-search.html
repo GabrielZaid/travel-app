@@ -1,0 +1,55 @@
+<form #searchForm="ngForm" (ngSubmit)="search(searchForm)" class="flex flex-col gap-4 sm:flex-row sm:items-end card-brand p-4" novalidate>
+  <div class="flex-1">
+    <label class="block text-sm text-gray-600 mb-1">Origin</label>
+    <input
+      type="text"
+      [(ngModel)]="origin"
+      name="origin"
+      required
+      #originField="ngModel"
+      [class.is-invalid]="originField.invalid && (originField.touched || submitted)"
+      class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+      placeholder="JFK"
+    />
+    <div *ngIf="originField.invalid && (originField.touched || submitted)" class="error-text">Origen es obligatorio.</div>
+  </div>
+
+  <div class="flex-1">
+    <label class="block text-sm text-gray-600 mb-1">Destination</label>
+    <input
+      type="text"
+      [(ngModel)]="destination"
+      name="destination"
+      required
+      #destinationField="ngModel"
+      [class.is-invalid]="destinationField.invalid && (destinationField.touched || submitted)"
+      class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+      placeholder="LAX"
+    />
+    <div *ngIf="destinationField.invalid && (destinationField.touched || submitted)" class="error-text">Destino es obligatorio.</div>
+  </div>
+
+  <div class="w-40">
+    <label class="block text-sm text-gray-600 mb-1">Date</label>
+    <input
+      type="date"
+      [(ngModel)]="date"
+      name="date"
+      required
+      #dateField="ngModel"
+      [class.is-invalid]="dateField.invalid && (dateField.touched || submitted)"
+      class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+    />
+    <div *ngIf="dateField.invalid && (dateField.touched || submitted)" class="error-text">Fecha es obligatoria.</div>
+  </div>
+
+  <div class="mt-2 sm:mt-0">
+    <button
+      type="submit"
+      [disabled]="searchForm.invalid && submitted"
+      class="inline-flex items-center px-4 py-2 btn-brand rounded-md focus:outline-none disabled:opacity-60"
+    >
+      Buscar vuelos
+    </button>
+  </div>
+</form>

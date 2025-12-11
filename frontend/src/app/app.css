@@ -1,0 +1,34 @@
+:root{
+	--b1: #4E63D9; /* primary */
+	--b2: #9CABD9; /* secondary */
+	--b3: #4ED9BF; /* accent */
+	--b4: #4ED9A6; /* accent-2 */
+	--b5: #F2F2F2; /* light */
+}
+
+/* Utility classes used by components */
+.bg-b1 { background: var(--b1) !important; color: white; }
+.bg-b2 { background: var(--b2) !important; color: white; }
+.bg-b3 { background: var(--b3) !important; color: white; }
+.bg-b4 { background: var(--b4) !important; color: white; }
+.bg-b5 { background: var(--b5) !important; color: inherit; }
+
+.text-b1 { color: var(--b1); }
+.text-b3 { color: var(--b3); }
+
+.btn-brand{
+	background: var(--b1);
+	color: #fff;
+	border: 0;
+}
+.btn-brand:hover{ background: var(--b2); }
+
+.card-brand{
+	background: #fff;
+	border-radius: 12px;
+	box-shadow: 0 6px 18px rgba(16,24,40,0.06);
+}
+
+/* Inputs focus using brand color */
+input:focus, select:focus, textarea:focus{ outline: none; box-shadow: 0 0 0 4px rgba(78,99,217,0.12); border-color: rgba(78,99,217,0.6); }
+

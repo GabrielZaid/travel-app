@@ -1,0 +1,5 @@
+/* Minimal additional styles (Tailwind does most of the work) */
+:host { display: block; }
+
+.error-text{ color:#dc2626; font-size:12px; margin-top:6px }
+.is-invalid{ border-color:#dc2626 !important; box-shadow: 0 0 0 4px rgba(220,38,38,0.08) !important }
