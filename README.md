@@ -185,6 +185,12 @@ Flujo general de la aplicación
 4. La respuesta de Amadeus se parsea por los parsers (`parseFlights`, `parseAvailability`, etc.) a tipos internos.
 5. Si aplica, el backend ordena y pagina los resultados y devuelve `{ data, total, page, pageSize }`.
 6. El frontend renderiza cards, controla paginación, ordenamiento y estados (loading / empty / error).
+<img width="1851" height="972" alt="image" src="https://github.com/user-attachments/assets/477eec3d-463f-42cf-87c9-f7bcbdb51c34" />
+<img width="1867" height="935" alt="image" src="https://github.com/user-attachments/assets/6bef3208-36d0-498f-aab4-1f16d18599bc" />
+<img width="1811" height="924" alt="image" src="https://github.com/user-attachments/assets/ad909fdc-8556-4bb1-b121-419e39154050" />
+
+
+
 
 
 Licencia
