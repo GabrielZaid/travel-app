@@ -10,12 +10,21 @@ exports.AppModule = void 0;
 const common_1 = require("@nestjs/common");
 const app_controller_1 = require("./app.controller");
 const app_service_1 = require("./app.service");
+const amadeus_module_1 = require("./amadeus/amadeus.module");
+const config_1 = require("@nestjs/config");
+const axios_1 = require("@nestjs/axios");
+const flights_module_1 = require("./flights/flights.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
 exports.AppModule = AppModule = __decorate([
     (0, common_1.Module)({
-        imports: [],
+        imports: [
+            config_1.ConfigModule.forRoot({ isGlobal: true }),
+            amadeus_module_1.AmadeusModule,
+            axios_1.HttpModule,
+            flights_module_1.FlightsModule,
+        ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],
     })
