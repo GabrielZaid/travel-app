@@ -1,7 +1,7 @@
 # Ignore all node_modules directories anywhere in the repo
 **/node_modules/
 node_modules/
-
+backend/.env
 # Ignore pnpm internal store directories inside node_modules
 node_modules/.pnpm/
 **/node_modules/.pnpm/
