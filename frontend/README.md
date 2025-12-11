@@ -1,59 +1,77 @@
-# Frontend
+# Frontend — travel-app
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.0.2.
+Descripción
+-
+Aplicación frontend construida con Angular 21 que consume el backend (endpoints en `http://localhost:3000`) para mostrar búsquedas de vuelos, resultados e inventario de disponibilidad (cupos).
 
-## Development server
+Contenido del repositorio
+-
+- `src/`: código fuente de la aplicación Angular
+	- `app/features`: componentes principales (search, results, availability)
+	- `app/core/services`: servicios HTTP (ajusta `baseUrl` en `flight-availability.service.ts` si tu backend corre en otra URL)
+	- `public/`: activos estáticos
 
-To start a local development server, run:
+Tecnologías
+-
+- Angular 21
+- TypeScript
+- Tailwind CSS (integra estilos globales)
+- RxJS
+- Vitest (tests)
 
-```bash
-ng serve
+Cómo usar (desarrollo)
+-
+1. Entra a la carpeta `frontend` e instala dependencias:
+
+```powershell
+cd frontend
+pnpm install
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+2. Inicia el servidor de desarrollo:
 
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
+```powershell
+pnpm run start
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+3. Abre `http://localhost:4200/` en tu navegador. La app se recargará automáticamente en cambios.
 
-```bash
-ng generate --help
+Notas de configuración
+-
+- El servicio que hace la petición a la API de disponibilidades usa por defecto `http://localhost:3000` como `baseUrl`. Si tu backend corre en otra URL, modifica `src/app/core/services/flight-availability.service.ts` y actualiza `baseUrl`.
+
+Interacción con el backend
+-
+- La página de `Flight Availability` hace un `POST /flights/availability` con el payload:
+
+```json
+{
+	"origin":"MAD",
+	"destination":"JFK",
+	"date":"2025-12-20",
+	"time":"08:00:00",
+	"page":1,
+	"limit":5,
+	"sortBy":"closestDeparture"
+}
 ```
 
-## Building
+El backend devuelve la lista paginada y metadata `{ data, total, page, pageSize }`.
 
-To build the project run:
+Comandos útiles
+-
+- `pnpm run start` — arranca la app en modo desarrollo
+- `pnpm run build` — genera el build de producción
+- `pnpm run test` — ejecuta tests (Vitest)
 
-```bash
-ng build
-```
+Consejos de estilo
+-
+- Se utiliza Tailwind para utilidades; los estilos del componente están en `app/features/*`.
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+Contribuciones
+-
+- Abre issues o PRs. Para cambios grandes, comenta antes para acordar la implementación.
 
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+Contacto
+-
+Para dudas o soporte, contacta al autor del repositorio.

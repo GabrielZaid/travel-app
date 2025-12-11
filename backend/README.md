@@ -1,3 +1,74 @@
+# travel-app — Backend
+
+Descripción
+API backend en Node.js usando NestJS que expone endpoints para buscar vuelos, inspiraciones, fechas más baratas y la consulta de disponibilidad (cupos reales) usando la API de Amadeus. Soporta paginación y ordenamiento en la consulta de disponibilidades.
+
+Contenido del repositorio
+- `src/`: código fuente (módulos NestJS)
+  - `amadeus/`: cliente y helpers para comunicarse con la API de Amadeus
+  - `flights/`: controlador, servicio y DTOs relacionados a búsquedas y disponibilidad
+- `.env.example`: variables de entorno de ejemplo
+- `test/`: pruebas e2e
+
+Tecnologías
+- Node.js + NestJS
+- TypeScript
+- Axios (para llamadas HTTP a Amadeus)
+- class-validator / class-transformer (validación de DTOs)
+- Jest / Supertest (tests)
+
+Instalación y uso
+1. Clona el repo y entra en la carpeta `backend`:
+
+```powershell
+2. Copia el archivo de ejemplo de entorno y completa las credenciales:
+
+```powershell
+3. Ejecuta en modo desarrollo (reload automático):
+
+```powershell
+Comandos útiles
+
+- `pnpm run start:dev` — inicia NestJS en modo desarrollo
+- `pnpm run build` — compila a `dist/`
+- `pnpm run start:prod` — ejecuta la versión compilada
+- `pnpm run test` — corre las pruebas
+
+Variables de entorno
+Revisa `.env.example`. Las claves principales son:
+- `AMADEUS_CLIENT_ID` y `AMADEUS_CLIENT_SECRET` — credenciales de Amadeus
+- `AUTH_URL_AMADEUS`, `AMADEUS_API_URL` y las rutas de endpoints (ya incluidas en `.env.example`)
+
+API principal
+Base path: `http://localhost:3000` (por defecto)
+
+- GET `/flights` — búsqueda de ofertas (query params válidos definidos en `SearchFlightDto`).
+- GET `/flights/inspiration` — destinos por inspiración.
+- GET `/flights/cheapest-dates` — fechas más económicas.
+- POST `/flights/availability` — consulta de disponibilidad (body con `origin`, `destination`, `date`, `time`).
+
+Ejemplo: POST /flights/availability
+Request body (JSON):
+
+```json
+Parámetros relevantes
+
+- `page` / `limit`: paginación (el backend controla y valida valores seguros).
+- `sortBy`: ordenamiento en disponibilidades. Valores soportados:
+  - `closestDeparture` — vuelos más próximos a la fecha/hora de referencia
+- `shortestDuration` — menor tiempo de vuelo
+- `mostSeats` — más asientos disponibles (suma por segmentos)
+- `leastSeats` — menos asientos disponibles
+
+Notas de diseño
+- El servicio de flights delega parsing y lógica de paginación/ordenamiento a utilidades en `src/utils` para mantener el servicio legible y testeable.
+- En fallos del proveedor, el backend puede devolver respuestas vacías (código 200 con `data: []`) para ciertos códigos de error, o lanzar 502 cuando la conexión falla.
+
+Contribuir
+- Abrir issues o pull requests. Sigue las reglas de lint y formato (`pnpm run lint`, `pnpm run format`).
+
+Contacto
+Para dudas, contacta al autor del repositorio.
 <p align="center">
   <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
 </p>
