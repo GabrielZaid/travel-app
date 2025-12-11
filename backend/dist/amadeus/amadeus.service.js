@@ -17,6 +17,7 @@ const config_1 = require("@nestjs/config");
 const rxjs_1 = require("rxjs");
 const amadeus_1 = require("../constants/amadeus");
 const amadeus_2 = require("../constants/errors/amadeus");
+const configValue_1 = require("../utils/configValue");
 let AmadeusService = AmadeusService_1 = class AmadeusService {
     configService;
     httpService;
@@ -29,7 +30,7 @@ let AmadeusService = AmadeusService_1 = class AmadeusService {
     }
     async get(endpoint, params) {
         const token = await this.getAccessToken();
-        const url = `${this.getConfigValue(amadeus_1.AMADEUS_CONFIG_KEYS.AMADEUS_API_URL)}/${endpoint}`;
+        const url = `${(0, configValue_1.getConfigValue)(this.configService, amadeus_1.AMADEUS_CONFIG_KEYS.AMADEUS_API_URL)}/${endpoint}`;
         try {
             const response = await (0, rxjs_1.lastValueFrom)(this.httpService.get(url, {
                 headers: { Authorization: `Bearer ${token}` },
@@ -52,10 +53,10 @@ let AmadeusService = AmadeusService_1 = class AmadeusService {
     async refreshAccessToken() {
         const params = new URLSearchParams();
         params.append(amadeus_1.AMADEUS_AUTH_FIELDS.GRANT_TYPE, amadeus_1.AMADEUS_AUTH_VALUES.CLIENT_CREDENTIALS);
-        params.append(amadeus_1.AMADEUS_AUTH_FIELDS.CLIENT_ID, this.getConfigValue(amadeus_1.AMADEUS_CONFIG_KEYS.CLIENT_ID));
-        params.append(amadeus_1.AMADEUS_AUTH_FIELDS.CLIENT_SECRET, this.getConfigValue(amadeus_1.AMADEUS_CONFIG_KEYS.CLIENT_SECRET));
+        params.append(amadeus_1.AMADEUS_AUTH_FIELDS.CLIENT_ID, (0, configValue_1.getConfigValue)(this.configService, amadeus_1.AMADEUS_CONFIG_KEYS.CLIENT_ID));
+        params.append(amadeus_1.AMADEUS_AUTH_FIELDS.CLIENT_SECRET, (0, configValue_1.getConfigValue)(this.configService, amadeus_1.AMADEUS_CONFIG_KEYS.CLIENT_SECRET));
         try {
-            const { data } = await (0, rxjs_1.lastValueFrom)(this.httpService.post(this.getConfigValue(amadeus_1.AMADEUS_CONFIG_KEYS.AUTH_URL_AMADEUS), params, {
+            const { data } = await (0, rxjs_1.lastValueFrom)(this.httpService.post((0, configValue_1.getConfigValue)(this.configService, amadeus_1.AMADEUS_CONFIG_KEYS.AUTH_URL_AMADEUS), params, {
                 headers: {
                     [amadeus_1.AMADEUS_HTTP_HEADERS.CONTENT_TYPE]: amadeus_1.AMADEUS_HTTP_HEADER_VALUES.FORM_URL_ENCODED,
                 },
@@ -78,13 +79,6 @@ let AmadeusService = AmadeusService_1 = class AmadeusService {
             this.logger.error(amadeus_2.ERROR_FETCHING_AMADEUS_TOKEN, error);
             throw new Error(amadeus_2.ERROR_FETCHING_AMADEUS_TOKEN);
         }
-    }
-    getConfigValue(key) {
-        const value = this.configService.get(key);
-        if (value === undefined || value === null || value === '') {
-            throw new Error(`${amadeus_2.ERROR_MISSING_AMADEUS_CONFIG}: ${String(key)}`);
-        }
-        return value;
     }
 };
 exports.AmadeusService = AmadeusService;

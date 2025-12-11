@@ -15,10 +15,10 @@ import {
   ERROR_EXPIRED_AMADEUS_TOKEN_STATE,
   ERROR_FETCHING_AMADEUS_TOKEN,
   ERROR_INVALID_AMADEUS_TOKEN_TYPE,
-  ERROR_MISSING_AMADEUS_CONFIG,
   ERROR_FETCHING_AMADEUS_DATA_FROM_ENDPOINT,
 } from '../constants/errors/amadeus';
 import { AmadeusConfig, AmadeusOAuthResponse } from '../types/amadeus';
+import { getConfigValue } from '../utils/configValue';
 
 @Injectable()
 export class AmadeusService {
@@ -36,7 +36,7 @@ export class AmadeusService {
     params?: Record<string, string>,
   ): Promise<T> {
     const token = await this.getAccessToken();
-    const url = `${this.getConfigValue(AMADEUS_CONFIG_KEYS.AMADEUS_API_URL)}/${endpoint}`;
+    const url = `${getConfigValue(this.configService, AMADEUS_CONFIG_KEYS.AMADEUS_API_URL)}/${endpoint}`;
 
     try {
       const response = await lastValueFrom(
@@ -72,16 +72,19 @@ export class AmadeusService {
     );
     params.append(
       AMADEUS_AUTH_FIELDS.CLIENT_ID,
-      this.getConfigValue(AMADEUS_CONFIG_KEYS.CLIENT_ID),
+      getConfigValue(this.configService, AMADEUS_CONFIG_KEYS.CLIENT_ID),
     );
     params.append(
       AMADEUS_AUTH_FIELDS.CLIENT_SECRET,
-      this.getConfigValue(AMADEUS_CONFIG_KEYS.CLIENT_SECRET),
+      getConfigValue(this.configService, AMADEUS_CONFIG_KEYS.CLIENT_SECRET),
     );
     try {
       const { data } = await lastValueFrom(
         this.httpService.post<AmadeusOAuthResponse>(
-          this.getConfigValue(AMADEUS_CONFIG_KEYS.AUTH_URL_AMADEUS),
+          getConfigValue(
+            this.configService,
+            AMADEUS_CONFIG_KEYS.AUTH_URL_AMADEUS,
+          ),
           params,
           {
             headers: {
@@ -114,15 +117,5 @@ export class AmadeusService {
       this.logger.error(ERROR_FETCHING_AMADEUS_TOKEN, error as Error);
       throw new Error(ERROR_FETCHING_AMADEUS_TOKEN);
     }
-  }
-
-  private getConfigValue<Key extends keyof AmadeusConfig>(
-    key: Key,
-  ): AmadeusConfig[Key] {
-    const value = this.configService.get<AmadeusConfig[Key]>(key);
-    if (value === undefined || value === null || value === '') {
-      throw new Error(`${ERROR_MISSING_AMADEUS_CONFIG}: ${String(key)}`);
-    }
-    return value;
   }
 }

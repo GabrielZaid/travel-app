@@ -11,5 +11,4 @@ export declare class AmadeusService {
     get<T = unknown>(endpoint: string, params?: Record<string, string>): Promise<T>;
     private getAccessToken;
     private refreshAccessToken;
-    private getConfigValue;
 }

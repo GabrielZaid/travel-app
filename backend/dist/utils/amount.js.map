@@ -1,0 +1,1 @@
+{"version":3,"file":"amount.js","sourceRoot":"","sources":["../../src/utils/amount.ts"],"names":[],"mappings":";;AAAA,kCAGC;AAHD,SAAgB,WAAW,CAAC,KAAc;IACxC,MAAM,MAAM,GAAG,MAAM,CAAC,UAAU,CAAC,KAAK,IAAI,GAAG,CAAC,CAAC;IAC/C,OAAO,MAAM,CAAC,QAAQ,CAAC,MAAM,CAAC,CAAC,CAAC,CAAC,MAAM,CAAC,CAAC,CAAC,CAAC,CAAC;AAC9C,CAAC"}
