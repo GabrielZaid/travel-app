@@ -1,21 +1,28 @@
 import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AmadeusService } from '../amadeus/amadeus.service';
-import { AMADEUS_CONFIG_KEYS } from '../constants/amadeus';
+import {
+  AMADEUS_CONFIG_KEYS,
+  AMADEUS_HTTP_HEADERS,
+  AMADEUS_HTTP_HEADER_VALUES,
+} from '../constants/amadeus';
 import { ERROR_MESSAGES } from '../constants/errors/common';
 import { getConfigValue } from '../utils/configValue';
 import { extractPayload, extractProviderError } from '../utils/amadeusResponse';
 import { parseFlights } from '../utils/parsers/flights';
 import { parseInspirationFlights } from '../utils/parsers/inspiration';
 import { parseCheapestDates } from '../utils/parsers/cheapestDates';
+import { parseAvailabilityFlights } from '../utils/parsers/availability';
 import { SearchFlightDto } from './dto/search-flight.dto';
 import { SearchFlightInspirationDto } from './dto/search-flight-inspiration.dto';
 import { CheapestDateDto } from './dto/cheapest-date.dto';
+import { SearchAvailabilityDto } from './dto/search-availability.dto';
 import type { AmadeusConfig } from 'src/types/amadeus';
 import type {
   Flight,
   FlightInspiration,
   FlightCheapestDate,
+  FlightAvailability,
 } from '../types/flights';
 
 @Injectable()
@@ -188,6 +195,62 @@ export class FlightsService {
       if (this.shouldReturnEmpty(status)) {
         this.logger.warn(ERROR_MESSAGES.AMADEUS_CHEAPEST_DATES_EMPTY_RESULT);
         return [] as FlightCheapestDate[];
+      }
+
+      throw new HttpException(
+        ERROR_MESSAGES.PROVIDER_CONNECTION_FAILURE,
+        HttpStatus.BAD_GATEWAY,
+      );
+    }
+  }
+
+  async searchAvailability(
+    searchDto: SearchAvailabilityDto,
+  ): Promise<FlightAvailability[]> {
+    const body = {
+      originDestinations: [
+        {
+          id: '1',
+          originLocationCode: searchDto.origin,
+          destinationLocationCode: searchDto.destination,
+          departureDateTime: {
+            date: searchDto.date,
+            time: searchDto.time,
+          },
+        },
+      ],
+      travelers: [{ id: '1', travelerType: 'ADULT' }],
+      sources: ['GDS'],
+    } as const;
+
+    const endpoint = getConfigValue(
+      this.configService,
+      AMADEUS_CONFIG_KEYS.ENDPOINT_FLIGHT_AVAILABILITY,
+    );
+
+    try {
+      const response = await this.amadeusService.post<unknown>(endpoint, body, {
+        headers: {
+          [AMADEUS_HTTP_HEADERS.CONTENT_TYPE]:
+            AMADEUS_HTTP_HEADER_VALUES.AMADEUS_JSON as string,
+          [AMADEUS_HTTP_HEADERS.METHOD_OVERRIDE]: 'GET',
+        },
+      });
+      const payload = extractPayload(response);
+      const flights = parseAvailabilityFlights(payload);
+      return flights;
+    } catch (err: unknown) {
+      const { status, data } = extractProviderError(err);
+
+      this.logger.error(ERROR_MESSAGES.AMADEUS_AVAILABILITY_FAILURE, {
+        status,
+        data,
+        error: err,
+      });
+
+      if (this.shouldReturnEmpty(status)) {
+        this.logger.warn(ERROR_MESSAGES.AMADEUS_AVAILABILITY_EMPTY_RESULT);
+        return [] as FlightAvailability[];
       }
 
       throw new HttpException(

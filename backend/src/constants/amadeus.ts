@@ -6,6 +6,7 @@ export const AMADEUS_CONFIG_KEYS = {
   ENDPOINT_FLIGHT_OFFERS: 'ENDPOINT_FLIGHT_OFFERS',
   ENDPOINT_FLIGHT_DESTINATIONS: 'ENDPOINT_FLIGHT_DESTINATIONS',
   ENDPOINT_FLIGHT_DATES: 'ENDPOINT_FLIGHT_DATES',
+  ENDPOINT_FLIGHT_AVAILABILITY: 'ENDPOINT_FLIGHT_AVAILABILITY',
 } as const;
 
 export const AMADEUS_AUTH_FIELDS = {
@@ -20,10 +21,12 @@ export const AMADEUS_AUTH_VALUES = {
 
 export const AMADEUS_HTTP_HEADERS = {
   CONTENT_TYPE: 'Content-Type',
+  METHOD_OVERRIDE: 'X-HTTP-Method-Override',
 } as const;
 
 export const AMADEUS_HTTP_HEADER_VALUES = {
   FORM_URL_ENCODED: 'application/x-www-form-urlencoded',
+  AMADEUS_JSON: 'application/vnd.amadeus+json',
 } as const;
 
 export const BEARER = 'Bearer';

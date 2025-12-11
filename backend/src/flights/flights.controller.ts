@@ -1,6 +1,8 @@
 import {
   Controller,
   Get,
+  Post,
+  Body,
   Query,
   UsePipes,
   ValidationPipe,
@@ -9,6 +11,7 @@ import { FlightsService } from './flights.service';
 import { SearchFlightDto } from './dto/search-flight.dto';
 import { SearchFlightInspirationDto } from './dto/search-flight-inspiration.dto';
 import { CheapestDateDto } from './dto/cheapest-date.dto';
+import { SearchAvailabilityDto } from './dto/search-availability.dto';
 
 @Controller('flights')
 export class FlightsController {
@@ -30,5 +33,11 @@ export class FlightsController {
   @UsePipes(new ValidationPipe({ transform: true }))
   async getCheapestDates(@Query() searchDto: CheapestDateDto) {
     return this.flightsService.findCheapestDates(searchDto);
+  }
+
+  @Post('availability')
+  @UsePipes(new ValidationPipe({ transform: true }))
+  async searchAvailability(@Body() searchDto: SearchAvailabilityDto) {
+    return this.flightsService.searchAvailability(searchDto);
   }
 }

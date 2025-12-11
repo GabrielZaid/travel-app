@@ -6,6 +6,7 @@ export interface AmadeusConfig {
   ENDPOINT_FLIGHT_OFFERS: string;
   ENDPOINT_FLIGHT_DESTINATIONS: string;
   ENDPOINT_FLIGHT_DATES: string;
+  ENDPOINT_FLIGHT_AVAILABILITY: string;
 }
 
 export interface AmadeusOAuthResponse {

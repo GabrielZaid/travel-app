@@ -55,6 +55,33 @@ export class AmadeusService {
     }
   }
 
+  async post<T = unknown>(
+    endpoint: string,
+    body: unknown,
+    options?: { headers?: Record<string, string> },
+  ): Promise<T> {
+    const token = await this.getAccessToken();
+    const url = `${getConfigValue(this.configService, AMADEUS_CONFIG_KEYS.AMADEUS_API_URL)}/${endpoint}`;
+
+    try {
+      const response = await lastValueFrom(
+        this.httpService.post(url, body, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            ...(options?.headers ?? {}),
+          },
+        }),
+      );
+      return response.data as T;
+    } catch (error) {
+      this.logger.error(
+        `${ERROR_FETCHING_AMADEUS_DATA_FROM_ENDPOINT}: ${endpoint}`,
+        error as Error,
+      );
+      throw error;
+    }
+  }
+
   private async getAccessToken(): Promise<string> {
     const now = Date.now();
     if (this.accessToken && this.tokenExpiry && now < this.tokenExpiry) {
