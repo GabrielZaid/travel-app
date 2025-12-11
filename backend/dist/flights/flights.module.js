@@ -10,11 +10,13 @@ exports.FlightsModule = void 0;
 const common_1 = require("@nestjs/common");
 const flights_controller_1 = require("./flights.controller");
 const flights_service_1 = require("./flights.service");
+const amadeus_module_1 = require("../amadeus/amadeus.module");
 let FlightsModule = class FlightsModule {
 };
 exports.FlightsModule = FlightsModule;
 exports.FlightsModule = FlightsModule = __decorate([
     (0, common_1.Module)({
+        imports: [amadeus_module_1.AmadeusModule],
         controllers: [flights_controller_1.FlightsController],
         providers: [flights_service_1.FlightsService],
     })
