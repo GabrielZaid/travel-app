@@ -1,55 +1,97 @@
-<form #searchForm="ngForm" (ngSubmit)="search(searchForm)" class="flex flex-col gap-4 sm:flex-row sm:items-end card-brand p-4" novalidate>
+<form
+  #searchForm="ngForm"
+  (ngSubmit)="search(searchForm)"
+  class="p-6 bg-white shadow-md rounded-2xl border border-[#F2F2F2] space-y-4 sm:space-y-0 sm:flex sm:flex-row sm:items-end sm:gap-4"
+  novalidate
+>
+  <!-- ORIGIN -->
   <div class="flex-1">
-    <label class="block text-sm text-gray-600 mb-1">Origin</label>
+    <label class="block text-sm font-medium text-gray-700 mb-1">✈️ Origin</label>
+
     <input
       type="text"
       [(ngModel)]="origin"
       name="origin"
       required
       #originField="ngModel"
-      [class.is-invalid]="originField.invalid && (originField.touched || submitted)"
-      class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-      placeholder="JFK"
+      [ngClass]="{
+        'border-red-400 ring-red-300': originField.invalid && (originField.touched || submitted),
+        'border-gray-300': !(originField.invalid && (originField.touched || submitted))
+      }"
+      class="w-full px-3 py-2 border rounded-xl bg-[#F8F8F8] focus:outline-none focus:ring-2 focus:ring-[#4E63D9]"
+      placeholder="Ej: MAD"
+      style="text-transform:uppercase"
+      (input)="origin = $any($event.target).value?.toUpperCase()"
+      list="airports"
     />
-    <div *ngIf="originField.invalid && (originField.touched || submitted)" class="error-text">Origen es obligatorio.</div>
+
+    <p *ngIf="originField.invalid && (originField.touched || submitted)" class="text-red-500 text-xs mt-1">
+      El origen es obligatorio.
+    </p>
   </div>
 
+  <!-- DESTINATION -->
   <div class="flex-1">
-    <label class="block text-sm text-gray-600 mb-1">Destination</label>
+    <label class="block text-sm font-medium text-gray-700 mb-1">📍 Destination</label>
+
     <input
       type="text"
       [(ngModel)]="destination"
       name="destination"
       required
       #destinationField="ngModel"
-      [class.is-invalid]="destinationField.invalid && (destinationField.touched || submitted)"
-      class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-      placeholder="LAX"
+      [ngClass]="{
+        'border-red-400 ring-red-300': destinationField.invalid && (destinationField.touched || submitted),
+        'border-gray-300': !(destinationField.invalid && (destinationField.touched || submitted))
+      }"
+      class="w-full px-3 py-2 border rounded-xl bg-[#F8F8F8] focus:outline-none focus:ring-2 focus:ring-[#4E63D9]"
+      placeholder="Ej: ORY"
+      style="text-transform:uppercase"
+      (input)="destination = $any($event.target).value?.toUpperCase()"
+      list="airports"
     />
-    <div *ngIf="destinationField.invalid && (destinationField.touched || submitted)" class="error-text">Destino es obligatorio.</div>
+
+    <p *ngIf="destinationField.invalid && (destinationField.touched || submitted)" class="text-red-500 text-xs mt-1">
+      El destino es obligatorio.
+    </p>
   </div>
 
-  <div class="w-40">
-    <label class="block text-sm text-gray-600 mb-1">Date</label>
+  <!-- DATE -->
+  <div class="w-full sm:w-44">
+    <label class="block text-sm font-medium text-gray-700 mb-1">📅 Date</label>
+
     <input
       type="date"
       [(ngModel)]="date"
       name="date"
       required
       #dateField="ngModel"
-      [class.is-invalid]="dateField.invalid && (dateField.touched || submitted)"
-      class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+      [ngClass]="{
+        'border-red-400 ring-red-300': dateField.invalid && (dateField.touched || submitted),
+        'border-gray-300': !(dateField.invalid && (dateField.touched || submitted))
+      }"
+      class="w-full px-3 py-2 border rounded-xl bg-[#F8F8F8] focus:outline-none focus:ring-2 focus:ring-[#4E63D9]"
     />
-    <div *ngIf="dateField.invalid && (dateField.touched || submitted)" class="error-text">Fecha es obligatoria.</div>
+
+    <p *ngIf="dateField.invalid && (dateField.touched || submitted)" class="text-red-500 text-xs mt-1">
+      La fecha es obligatoria.
+    </p>
   </div>
 
-  <div class="mt-2 sm:mt-0">
+  <!-- BUTTON -->
+  <div class="pt-1 sm:pt-0">
     <button
       type="submit"
+      class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-[#4ED9A6] text-white font-semibold shadow-md hover:bg-[#39b988] transition disabled:opacity-50 cursor-pointer"
       [disabled]="searchForm.invalid && submitted"
-      class="inline-flex items-center px-4 py-2 btn-brand rounded-md focus:outline-none disabled:opacity-60"
     >
-      Buscar vuelos
+      🔍 Buscar vuelos
     </button>
   </div>
 </form>
+<datalist id="airports">
+  <option value="MAD"></option>
+  <option value="PAR"></option>
+  <option value="ORY"></option>
+  <option value="CDG"></option>
+</datalist>

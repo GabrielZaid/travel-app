@@ -15,13 +15,15 @@ export function parseFlights(data: unknown): Flight[] {
     if (!isRecord(candidate)) continue;
 
     const type = candidate.type;
-    if (typeof type !== 'string' || type.toLowerCase() !== 'flight-offer') continue;
+    if (typeof type !== 'string' || type.toLowerCase() !== 'flight-offer')
+      continue;
 
     const id = candidate.id;
     if (typeof id !== 'string') continue;
 
     const priceRecord = candidate.price;
-    if (!isRecord(priceRecord) || typeof priceRecord.total !== 'string') continue;
+    if (!isRecord(priceRecord) || typeof priceRecord.total !== 'string')
+      continue;
 
     const itinerariesRaw = candidate.itineraries;
     if (!Array.isArray(itinerariesRaw) || itinerariesRaw.length === 0) continue;
@@ -113,7 +115,10 @@ export function parseFlights(data: unknown): Flight[] {
           price: {
             currency: typeof (travelerPrice as any).currency === 'string' ? (travelerPrice as any).currency : priceCurrency,
             total: parseAmount((travelerPrice as any).total),
-            base: parseAmount((travelerPrice as any).base ?? (travelerPrice as any).total),
+            base: parseAmount(
+            (travelerPrice as any).base 
+            ?? 
+            (travelerPrice as any).total),
           },
         };
         break;

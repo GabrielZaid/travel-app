@@ -1,4 +1,5 @@
-import { IsNotEmpty, IsString, Length, IsDateString } from 'class-validator';
+import { IsNotEmpty, IsString, Length, IsDateString, IsOptional, IsInt, Min } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class SearchFlightDto {
   @IsNotEmpty()
@@ -13,4 +14,16 @@ export class SearchFlightDto {
 
   @IsDateString()
   date?: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  limit?: number;
 }

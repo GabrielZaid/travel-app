@@ -1,5 +1,8 @@
 export interface FlightResponse {
   data: Flight[];
+  total?: number;
+  page?: number;
+  pageSize?: number;
 }
 
 export interface Flight {
