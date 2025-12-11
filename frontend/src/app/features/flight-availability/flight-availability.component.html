@@ -1,0 +1,207 @@
+<section class="availability-page space-y-8">
+  <header class="hero-card flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+    <div>
+      <p class="eyebrow">Flight Availability</p>
+      <h1>Consulta la ocupación real antes de emitir</h1>
+      <p class="subtitle">
+        Ingresa la ruta y obtén, en segundos, las clases disponibles y los asientos que aún quedan para cada segmento.
+      </p>
+    </div>
+  </header>
+
+  <section class="card-surface">
+    <form class="availability-form" [formGroup]="form" (ngSubmit)="submit()">
+      <div class="form-grid grid gap-4 md:grid-cols-2">
+        <label class="field">
+          <span class="field-label">Origin</span>
+          <div class="input-shell">
+            <span class="input-icon">📍</span>
+            <input
+              type="text"
+              formControlName="origin"
+              placeholder="MAD"
+              maxlength="3"
+              autocomplete="off"
+            />
+          </div>
+          <small class="error" *ngIf="showError('origin')">Usa un código IATA de 3 letras.</small>
+        </label>
+
+        <label class="field">
+          <span class="field-label">Destination</span>
+          <div class="input-shell">
+            <span class="input-icon">📍</span>
+            <input
+              type="text"
+              formControlName="destination"
+              placeholder="JFK"
+              maxlength="3"
+              autocomplete="off"
+            />
+          </div>
+          <small class="error" *ngIf="showError('destination')">Código IATA requerido.</small>
+        </label>
+
+        <label class="field">
+          <span class="field-label">Date</span>
+          <div class="input-shell">
+            <span class="input-icon">📅</span>
+            <input type="date" formControlName="date" />
+          </div>
+          <small class="error" *ngIf="showError('date')">Selecciona una fecha.</small>
+        </label>
+
+        <label class="field">
+          <span class="field-label">Time</span>
+          <div class="input-shell">
+            <span class="input-icon">🕒</span>
+            <input type="time" formControlName="time" />
+          </div>
+          <small class="error" *ngIf="showError('time')">Indica hora local de salida.</small>
+        </label>
+
+        <label class="field md:col-span-2">
+          <span class="field-label">Ordenar por</span>
+          <div class="input-shell select-shell">
+            <span class="input-icon">↕️</span>
+            <select formControlName="sortBy" (change)="handleSortChange()" [disabled]="loading()">
+              <option *ngFor="let option of sortOptions" [value]="option.value">
+                {{ option.label }}
+              </option>
+            </select>
+          </div>
+        </label>
+      </div>
+
+      <div class="actions">
+        <button class="cta" type="submit" [disabled]="loading()">
+          <span *ngIf="!loading()">Consultar disponibilidad</span>
+          <span *ngIf="loading()" class="btn-spinner"></span>
+        </button>
+        <p class="muted">Usamos datos en vivo de Amadeus para validar cupo.</p>
+      </div>
+    </form>
+  </section>
+
+  <section class="card-surface state-panel">
+    <header class="panel-header">
+      <div>
+        <p class="eyebrow">Resultados</p>
+        <h2>Disponibilidad por vuelo</h2>
+      </div>
+      <div class="badge">Clases destacadas en verde</div>
+    </header>
+
+    <ng-container *ngIf="loading(); else notLoading">
+      <div class="state state-loading">
+        <span class="spinner"></span>
+        <p>Consultando disponibilidad…</p>
+      </div>
+    </ng-container>
+
+    <ng-template #notLoading>
+      <div *ngIf="errorMessage(); else emptyOrResults" class="state state-error">
+        <p>⚠️ {{ errorMessage() }}</p>
+        <button type="button" class="ghost" (click)="retryLastQuery()" [disabled]="loading()">Reintentar</button>
+      </div>
+
+      <ng-template #emptyOrResults>
+        <div *ngIf="showEmptyState(); else resultsList" class="state state-empty">
+          <div class="empty-icon">✈️</div>
+          <p>
+            {{ hasSubmitted() ? 'Sin disponibilidad para esta ruta.' : 'Ingresa una ruta para conocer el inventario disponible.' }}
+          </p>
+        </div>
+
+        <ng-template #resultsList>
+          <div class="results-grid grid gap-6" *ngIf="showResults()">
+            <article
+              class="availability-card rounded-3xl shadow-lg"
+              *ngFor="let flight of availabilities(); trackBy: trackByAvailability"
+            >
+              <header class="availability-head">
+                <div>
+                  <p class="eyebrow">{{ routeLabel(flight) }}</p>
+                  <h3>{{ formatDuration(flight.duration) }}</h3>
+                </div>
+                <span class="chip">{{ flight.segments.length }} segmentos</span>
+              </header>
+
+              <section class="segments" *ngFor="let segment of flight.segments; trackBy: trackBySegment">
+                <div class="segment-header">
+                  <div>
+                    <p class="segment-title">{{ segment.carrierCode }} {{ segment.number }}</p>
+                    <p class="segment-subtitle">
+                      {{ segment.departure.iataCode }} → {{ segment.arrival.iataCode }}
+                    </p>
+                  </div>
+                  <div class="segment-time">
+                    <p>{{ formatDateTime(segment.departure.at) }}</p>
+                    <p>{{ formatDateTime(segment.arrival.at) }}</p>
+                  </div>
+                </div>
+
+                <div class="segment-meta">
+                  <span *ngIf="segment.departure.terminal" class="meta-pill">
+                    Terminal {{ segment.departure.terminal }}
+                  </span>
+                  <span *ngIf="segment.arrival.terminal" class="meta-pill">
+                    Llegada T{{ segment.arrival.terminal }}
+                  </span>
+                </div>
+
+                <div class="classes-grid-wrapper">
+                  <div class="classes-grid-header">
+                    <span>Clase</span>
+                    <span>Seats</span>
+                  </div>
+                  <div class="classes-grid">
+                    <div
+                      class="class-pill"
+                      *ngFor="let cabin of segment.availabilityClasses; trackBy: trackByClass"
+                    >
+                      <span class="class-code">{{ cabin.class }}</span>
+                      <span class="class-seats" [class.full]="cabin.numberOfBookableSeats >= 7">
+                        {{ cabin.numberOfBookableSeats }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            </article>
+          </div>
+
+          <div class="pagination" *ngIf="showResults() && pages().length > 1">
+            <button
+              type="button"
+              class="page-btn"
+              (click)="prevPage()"
+              [disabled]="currentPage() === 1"
+            >
+              Anterior
+            </button>
+
+            <button
+              type="button"
+              class="page-number"
+              *ngFor="let page of pages(); trackBy: trackByPage"
+              [class.active]="page === currentPage()"
+              (click)="goToPage(page)"
+            >
+              {{ page }}
+            </button>
+
+            <button
+              type="button"
+              class="page-btn"
+              (click)="nextPage()"
+              [disabled]="currentPage() === totalPages()"
+            >
+              Siguiente
+            </button>
+          </div>
+        </ng-template>
+      </ng-template>
+    </ng-template>
+  </section>
+</section>

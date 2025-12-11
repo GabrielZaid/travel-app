@@ -1,34 +1,25 @@
-:root{
-	--b1: #4E63D9; /* primary */
-	--b2: #9CABD9; /* secondary */
-	--b3: #4ED9BF; /* accent */
-	--b4: #4ED9A6; /* accent-2 */
-	--b5: #F2F2F2; /* light */
+.top-nav{
+	display:flex;
+	align-items:center;
+	justify-content:space-between;
+	padding:18px 4%;
+	background:#fff;
+	box-shadow:0 8px 20px rgba(15,23,42,0.08);
+	position:sticky;
+	top:0;
+	z-index:20;
 }
+.brand{display:flex;flex-direction:column;gap:4px}
+.logo{font-weight:700;font-size:1.1rem;color:#111827}
+.tagline{margin:0;color:#6b7280;font-size:.85rem}
+.nav-links{display:flex;gap:12px;align-items:center}
+.nav-links a{padding:10px 18px;border-radius:999px;text-decoration:none;font-weight:600;color:#4e63d9;background:#f4f5ff;transition:all .2s ease}
+.nav-links a:hover{background:#e4e8ff}
+.nav-links a.active{background:#4e63d9;color:#fff;box-shadow:0 12px 24px rgba(78,99,217,.35)}
 
-/* Utility classes used by components */
-.bg-b1 { background: var(--b1) !important; color: white; }
-.bg-b2 { background: var(--b2) !important; color: white; }
-.bg-b3 { background: var(--b3) !important; color: white; }
-.bg-b4 { background: var(--b4) !important; color: white; }
-.bg-b5 { background: var(--b5) !important; color: inherit; }
-
-.text-b1 { color: var(--b1); }
-.text-b3 { color: var(--b3); }
-
-.btn-brand{
-	background: var(--b1);
-	color: #fff;
-	border: 0;
+.route-shell{
+	min-height:calc(100vh - 120px);
+	display:block;
+	padding:32px 4%;
 }
-.btn-brand:hover{ background: var(--b2); }
-
-.card-brand{
-	background: #fff;
-	border-radius: 12px;
-	box-shadow: 0 6px 18px rgba(16,24,40,0.06);
-}
-
-/* Inputs focus using brand color */
-input:focus, select:focus, textarea:focus{ outline: none; box-shadow: 0 0 0 4px rgba(78,99,217,0.12); border-color: rgba(78,99,217,0.6); }
 

@@ -1,3 +1,62 @@
 /* You can add global styles to this file, and also import other style files */
 
 @import "tailwindcss";
+
+:root {
+	--bg: #f6f7fb;
+	--card: #ffffff;
+	--muted: #71717a;
+	--accent: #0f172a;
+	--pill: #111827;
+	--primary: #111827;
+	--radius: 12px;
+	--b1: #4e63d9;
+	--b2: #9cabd9;
+	--b3: #4ed9bf;
+	--b4: #4ed9a6;
+	--b5: #f2f2f2;
+}
+
+* {
+	box-sizing: border-box;
+}
+
+body {
+	font-family: Inter, system-ui, Segoe UI, Roboto, Helvetica, Arial;
+	margin: 0;
+	background: var(--bg);
+	color: var(--accent);
+}
+
+.bg-b1 { background: var(--b1) !important; color: #fff; }
+.bg-b2 { background: var(--b2) !important; color: #fff; }
+.bg-b3 { background: var(--b3) !important; color: #fff; }
+.bg-b4 { background: var(--b4) !important; color: #fff; }
+.bg-b5 { background: var(--b5) !important; color: inherit; }
+
+.text-b1 { color: var(--b1); }
+.text-b3 { color: var(--b3); }
+
+.btn-brand {
+	background: var(--b1);
+	color: #fff;
+	border: 0;
+}
+
+.btn-brand:hover {
+	background: var(--b2);
+}
+
+.card-brand {
+	background: #fff;
+	border-radius: 12px;
+	box-shadow: 0 6px 18px rgba(16, 24, 40, 0.06);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+	outline: none;
+	box-shadow: 0 0 0 4px rgba(78, 99, 217, 0.12);
+	border-color: rgba(78, 99, 217, 0.6);
+}

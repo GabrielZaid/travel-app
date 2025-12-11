@@ -122,3 +122,38 @@ export interface FlightCheapestDate {
   currency: string;
   links?: unknown;
 }
+
+export interface FlightAvailabilityClass {
+  class: string;
+  numberOfBookableSeats: number;
+}
+
+export interface FlightAvailabilitySegment {
+  id: string;
+  carrierCode: string;
+  number: string;
+  departure: { iataCode: string; terminal?: string; at: string };
+  arrival: { iataCode: string; terminal?: string; at: string };
+  availabilityClasses: FlightAvailabilityClass[];
+}
+
+export interface FlightAvailability {
+  type: 'flight-availability';
+  id: string;
+  duration?: string;
+  segments: FlightAvailabilitySegment[];
+}
+
+export enum AvailabilitySort {
+  ClosestDeparture = 'closestDeparture',
+  ShortestDuration = 'shortestDuration',
+  MostSeats = 'mostSeats',
+  LeastSeats = 'leastSeats',
+}
+
+export const AVAILABILITY_SORT_VALUES = [
+  AvailabilitySort.ClosestDeparture,
+  AvailabilitySort.ShortestDuration,
+  AvailabilitySort.MostSeats,
+  AvailabilitySort.LeastSeats,
+] as const;

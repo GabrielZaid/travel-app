@@ -1,8 +1,10 @@
 import { Routes } from '@angular/router';
-import { FlightSearch } from './features/flight-search/flight-search';
-import { FlightResults } from './features/flight-results/flight-results';
+import { LegacyHostComponent } from './features/legacy-host/legacy-host.component';
+import { FlightAvailabilityComponent } from './features/flight-availability/flight-availability.component';
 
 export const routes: Routes = [
-  { path: '', component: FlightSearch },
-  { path: 'results', component: FlightResults },
+  { path: '', component: LegacyHostComponent },
+  { path: 'results', component: LegacyHostComponent },
+  { path: 'flight-availability', component: FlightAvailabilityComponent },
+  { path: '**', redirectTo: '' },
 ];
