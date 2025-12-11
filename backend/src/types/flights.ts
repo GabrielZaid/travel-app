@@ -143,3 +143,17 @@ export interface FlightAvailability {
   duration?: string;
   segments: FlightAvailabilitySegment[];
 }
+
+export enum AvailabilitySort {
+  ClosestDeparture = 'closestDeparture',
+  ShortestDuration = 'shortestDuration',
+  MostSeats = 'mostSeats',
+  LeastSeats = 'leastSeats',
+}
+
+export const AVAILABILITY_SORT_VALUES = [
+  AvailabilitySort.ClosestDeparture,
+  AvailabilitySort.ShortestDuration,
+  AvailabilitySort.MostSeats,
+  AvailabilitySort.LeastSeats,
+] as const;

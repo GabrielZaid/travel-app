@@ -12,9 +12,11 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FlightAvailabilityService } from '../../core/services/flight-availability.service';
 import {
+  AvailabilitySortOption,
   FlightAvailability,
   FlightAvailabilityClass,
   FlightAvailabilitySegment,
+  FlightAvailabilityQuery,
   SearchAvailabilityPayload,
 } from '../../core/models/flight-availability.interface';
 
@@ -36,12 +38,25 @@ export class FlightAvailabilityComponent {
     destination: ['', [Validators.required, Validators.pattern(/^[A-Za-z]{3}$/)]],
     date: ['', [Validators.required]],
     time: ['', [Validators.required]],
+    sortBy: ['closestDeparture' as AvailabilitySortOption],
   });
 
   readonly loading = signal(false);
   readonly errorMessage = signal<string | null>(null);
   readonly availabilities = signal<FlightAvailability[]>([]);
   readonly hasSubmitted = signal(false);
+  readonly total = signal(0);
+  readonly pageSize = 5;
+  readonly currentPage = signal(1);
+
+  private readonly lastQuery = signal<FlightAvailabilityQuery | null>(null);
+
+  readonly sortOptions: { value: AvailabilitySortOption; label: string }[] = [
+    { value: 'closestDeparture', label: 'Más próximos a la salida' },
+    { value: 'shortestDuration', label: 'Menor duración' },
+    { value: 'mostSeats', label: 'Más asientos disponibles' },
+    { value: 'leastSeats', label: 'Menos asientos disponibles' },
+  ];
 
   readonly showEmptyState = computed(
     () =>
@@ -57,6 +72,16 @@ export class FlightAvailabilityComponent {
       !this.errorMessage(),
   );
 
+  readonly totalPages = computed(() => {
+    const total = this.total();
+    return Math.max(1, Math.ceil(total / this.pageSize));
+  });
+
+  readonly pages = computed(() => {
+    const count = this.totalPages();
+    return Array.from({ length: count }, (_, index) => index + 1);
+  });
+
   submit(): void {
     this.form.markAllAsTouched();
     if (this.form.invalid) {
@@ -65,23 +90,9 @@ export class FlightAvailabilityComponent {
 
     this.hasSubmitted.set(true);
     const payload = this.buildPayload();
-    this.loading.set(true);
-    this.errorMessage.set(null);
-
-    this.availabilityService
-      .searchAvailability(payload)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (data) => {
-          this.availabilities.set(data);
-          this.loading.set(false);
-        },
-        error: (err) => {
-          this.loading.set(false);
-          this.availabilities.set([]);
-          this.errorMessage.set(this.resolveError(err));
-        },
-      });
+    this.currentPage.set(1);
+    this.lastQuery.set(payload);
+    this.fetchAvailability(payload, 1);
   }
 
   showError(controlName: 'origin' | 'destination' | 'date' | 'time'): boolean {
@@ -96,10 +107,52 @@ export class FlightAvailabilityComponent {
   trackByClass = (_: number, item: FlightAvailabilityClass) =>
     `${item.class}-${item.numberOfBookableSeats}`;
 
+  trackByPage = (_: number, page: number) => page;
+
   routeLabel(flight: FlightAvailability): string {
     const first = flight.segments[0];
     const last = flight.segments[flight.segments.length - 1];
     return `${first?.departure.iataCode ?? '---'} → ${last?.arrival.iataCode ?? '---'}`;
+  }
+
+  goToPage(page: number) {
+    const payload = this.lastQuery();
+    if (!payload) return;
+    const safePage = Math.max(1, Math.min(page, this.totalPages()));
+    if (safePage === this.currentPage()) return;
+    this.fetchAvailability(payload, safePage);
+  }
+
+  prevPage() {
+    this.goToPage(this.currentPage() - 1);
+  }
+
+  nextPage() {
+    this.goToPage(this.currentPage() + 1);
+  }
+
+  handleSortChange() {
+    const payload = this.lastQuery();
+    if (!payload) {
+      return;
+    }
+    const sortBy = this.form.controls.sortBy.value as AvailabilitySortOption | null;
+    const updatedPayload: FlightAvailabilityQuery = {
+      ...payload,
+      sortBy: sortBy ?? undefined,
+    };
+    this.lastQuery.set(updatedPayload);
+    this.currentPage.set(1);
+    this.fetchAvailability(updatedPayload, 1);
+  }
+
+  retryLastQuery() {
+    const payload = this.lastQuery();
+    if (!payload) {
+      this.submit();
+      return;
+    }
+    this.fetchAvailability(payload, this.currentPage());
   }
 
   formatDuration(duration?: string): string {
@@ -129,18 +182,43 @@ export class FlightAvailabilityComponent {
   }
 
   private buildPayload(): SearchAvailabilityPayload {
-    const { origin, destination, date, time } = this.form.getRawValue();
+    const { origin, destination, date, time, sortBy } = this.form.getRawValue();
     return {
       origin: origin.toUpperCase(),
       destination: destination.toUpperCase(),
       date,
       time: this.normalizeTime(time),
+      sortBy: sortBy ?? undefined,
     };
   }
 
   private normalizeTime(value: string): string {
     if (!value) return '00:00:00';
     return value.length === 5 ? `${value}:00` : value;
+  }
+
+  private fetchAvailability(basePayload: FlightAvailabilityQuery, page: number) {
+    this.loading.set(true);
+    this.errorMessage.set(null);
+
+    this.availabilityService
+      .searchAvailability({ ...basePayload, page, limit: this.pageSize })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (response) => {
+          this.availabilities.set(response.data ?? []);
+          this.total.set(response.total ?? 0);
+          this.currentPage.set(response.page ?? page);
+          this.loading.set(false);
+        },
+        error: (err) => {
+          this.loading.set(false);
+          this.availabilities.set([]);
+          this.total.set(0);
+          this.currentPage.set(page);
+          this.errorMessage.set(this.resolveError(err));
+        },
+      });
   }
 
   private resolveError(error: unknown): string {

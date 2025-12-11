@@ -27,11 +27,27 @@ export interface FlightAvailability {
   segments: FlightAvailabilitySegment[];
 }
 
+export type AvailabilitySortOption =
+  | 'closestDeparture'
+  | 'shortestDuration'
+  | 'mostSeats'
+  | 'leastSeats';
+
 export interface SearchAvailabilityPayload {
   origin: string;
   destination: string;
   date: string;
   time: string;
+  page?: number;
+  limit?: number;
+  sortBy?: AvailabilitySortOption;
 }
 
-export type FlightAvailabilityResponse = ApiResponse<FlightAvailability[]>;
+export interface FlightAvailabilityResponse
+  extends ApiResponse<FlightAvailability[]> {
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+export type FlightAvailabilityQuery = Omit<SearchAvailabilityPayload, 'page' | 'limit'>;

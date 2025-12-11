@@ -13,6 +13,8 @@ import { parseFlights } from '../utils/parsers/flights';
 import { parseInspirationFlights } from '../utils/parsers/inspiration';
 import { parseCheapestDates } from '../utils/parsers/cheapestDates';
 import { parseAvailabilityFlights } from '../utils/parsers/availability';
+import { sortAvailabilityResults } from '../utils/availability-sort';
+import { resolvePagination, slicePage } from '../utils/pagination';
 import { SearchFlightDto } from './dto/search-flight.dto';
 import { SearchFlightInspirationDto } from './dto/search-flight-inspiration.dto';
 import { CheapestDateDto } from './dto/cheapest-date.dto';
@@ -204,9 +206,18 @@ export class FlightsService {
     }
   }
 
-  async searchAvailability(
-    searchDto: SearchAvailabilityDto,
-  ): Promise<FlightAvailability[]> {
+  async searchAvailability(searchDto: SearchAvailabilityDto): Promise<{
+    data: FlightAvailability[];
+    total: number;
+    page: number;
+    pageSize: number;
+  }> {
+    const { page, limit } = resolvePagination({
+      page: searchDto.page,
+      limit: searchDto.limit,
+    });
+
+    const referenceDateTime = `${searchDto.date}T${searchDto.time}`;
     const body = {
       originDestinations: [
         {
@@ -238,7 +249,20 @@ export class FlightsService {
       });
       const payload = extractPayload(response);
       const flights = parseAvailabilityFlights(payload);
-      return flights;
+      const sortedFlights = sortAvailabilityResults(
+        flights,
+        searchDto.sortBy,
+        referenceDateTime,
+      );
+      const total = sortedFlights.length;
+      const data = slicePage(sortedFlights, page, limit);
+
+      return {
+        data,
+        total,
+        page,
+        pageSize: limit,
+      };
     } catch (err: unknown) {
       const { status, data } = extractProviderError(err);
 
@@ -250,7 +274,17 @@ export class FlightsService {
 
       if (this.shouldReturnEmpty(status)) {
         this.logger.warn(ERROR_MESSAGES.AMADEUS_AVAILABILITY_EMPTY_RESULT);
-        return [] as FlightAvailability[];
+        return {
+          data: [],
+          total: 0,
+          page: 1,
+          pageSize: limit,
+        } as {
+          data: FlightAvailability[];
+          total: number;
+          page: number;
+          pageSize: number;
+        };
       }
 
       throw new HttpException(

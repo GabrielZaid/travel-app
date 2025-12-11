@@ -1,10 +1,18 @@
 import {
   IsDateString,
+  IsIn,
+  IsInt,
   IsNotEmpty,
+  IsOptional,
   IsString,
   Length,
   Matches,
+  Min,
 } from 'class-validator';
+import {
+  AVAILABILITY_SORT_VALUES,
+  AvailabilitySort,
+} from '../../types/flights';
 
 export class SearchAvailabilityDto {
   @IsNotEmpty()
@@ -25,4 +33,18 @@ export class SearchAvailabilityDto {
   @IsString()
   @Matches(/^\d{2}:\d{2}:\d{2}$/)
   time!: string;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  page?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  limit?: number;
+
+  @IsOptional()
+  @IsIn(AVAILABILITY_SORT_VALUES as readonly AvailabilitySort[])
+  sortBy?: AvailabilitySort;
 }

@@ -59,6 +59,18 @@
           </div>
           <small class="error" *ngIf="showError('time')">Indica hora local de salida.</small>
         </label>
+
+        <label class="field md:col-span-2">
+          <span class="field-label">Ordenar por</span>
+          <div class="input-shell select-shell">
+            <span class="input-icon">↕️</span>
+            <select formControlName="sortBy" (change)="handleSortChange()" [disabled]="loading()">
+              <option *ngFor="let option of sortOptions" [value]="option.value">
+                {{ option.label }}
+              </option>
+            </select>
+          </div>
+        </label>
       </div>
 
       <div class="actions">
@@ -90,7 +102,7 @@
     <ng-template #notLoading>
       <div *ngIf="errorMessage(); else emptyOrResults" class="state state-error">
         <p>⚠️ {{ errorMessage() }}</p>
-        <button type="button" class="ghost" (click)="submit()" [disabled]="loading()">Reintentar</button>
+        <button type="button" class="ghost" (click)="retryLastQuery()" [disabled]="loading()">Reintentar</button>
       </div>
 
       <ng-template #emptyOrResults>
@@ -138,23 +150,55 @@
                   </span>
                 </div>
 
-                <div class="classes-table">
-                  <div class="table-row table-header">
+                <div class="classes-grid-wrapper">
+                  <div class="classes-grid-header">
                     <span>Clase</span>
                     <span>Seats</span>
                   </div>
-                  <div
-                    class="table-row"
-                    *ngFor="let cabin of segment.availabilityClasses; trackBy: trackByClass"
-                  >
-                    <span>{{ cabin.class }}</span>
-                    <span class="seats" [class.full]="cabin.numberOfBookableSeats >= 7">
-                      {{ cabin.numberOfBookableSeats }}
-                    </span>
+                  <div class="classes-grid">
+                    <div
+                      class="class-pill"
+                      *ngFor="let cabin of segment.availabilityClasses; trackBy: trackByClass"
+                    >
+                      <span class="class-code">{{ cabin.class }}</span>
+                      <span class="class-seats" [class.full]="cabin.numberOfBookableSeats >= 7">
+                        {{ cabin.numberOfBookableSeats }}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </section>
             </article>
+          </div>
+
+          <div class="pagination" *ngIf="showResults() && pages().length > 1">
+            <button
+              type="button"
+              class="page-btn"
+              (click)="prevPage()"
+              [disabled]="currentPage() === 1"
+            >
+              Anterior
+            </button>
+
+            <button
+              type="button"
+              class="page-number"
+              *ngFor="let page of pages(); trackBy: trackByPage"
+              [class.active]="page === currentPage()"
+              (click)="goToPage(page)"
+            >
+              {{ page }}
+            </button>
+
+            <button
+              type="button"
+              class="page-btn"
+              (click)="nextPage()"
+              [disabled]="currentPage() === totalPages()"
+            >
+              Siguiente
+            </button>
           </div>
         </ng-template>
       </ng-template>
