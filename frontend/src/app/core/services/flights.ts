@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { FlightResponse } from '../../core/models/flight.interface';
+import { FlightResponse, CheapestDateResponse } from '../../core/models/flight.interface';
 
 @Injectable({
   providedIn: 'root',
@@ -25,5 +25,20 @@ export class FlightsService {
     return this.http.get<FlightResponse>(`${this.baseUrl}/flights`, {
       params,
     });
+  }
+
+  getCheapestDates(
+    origin: string,
+    destination: string,
+    options?: { nonStop?: boolean; oneWay?: boolean },
+  ): Observable<CheapestDateResponse> {
+    const params: Record<string, string> = { origin, destination };
+    if (options?.nonStop !== undefined) params['nonStop'] = String(options.nonStop);
+    if (options?.oneWay !== undefined) params['oneWay'] = String(options.oneWay);
+
+    return this.http.get<CheapestDateResponse>(
+      `${this.baseUrl}/flights/cheapest-dates`,
+      { params },
+    );
   }
 }
