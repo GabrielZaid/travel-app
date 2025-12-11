@@ -3,6 +3,9 @@ export interface AmadeusConfig {
   AMADEUS_CLIENT_SECRET: string;
   AMADEUS_API_URL: string;
   AUTH_URL_AMADEUS: string;
+  ENDPOINT_FLIGHT_OFFERS: string;
+  ENDPOINT_FLIGHT_DESTINATIONS: string;
+  ENDPOINT_FLIGHT_DATES: string;
 }
 
 export interface AmadeusOAuthResponse {
