@@ -1,5 +1,12 @@
-export interface FlightResponse {
-  data: Flight[];
+export interface ApiResponse<T> {
+  data: T;
+  meta?: Record<string, unknown>;
+}
+
+export interface FlightResponse extends ApiResponse<Flight[]> {
+  total?: number;
+  page?: number;
+  pageSize?: number;
 }
 
 export interface Flight {
@@ -45,3 +52,14 @@ export interface FlightSegment {
   flightNumber: string;      // "UX1027"
   duration: string;          // "PT1H55M"
 }
+
+export interface FlightCheapestDate {
+  origin: string;
+  destination: string;
+  departureDate: string;
+  returnDate?: string;
+  price: number;
+  currency: string;
+}
+
+export type CheapestDateResponse = ApiResponse<FlightCheapestDate[]>;

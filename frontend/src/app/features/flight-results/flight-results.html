@@ -1,21 +1,194 @@
-<div *ngIf="loading" class="p-4 text-gray-600">Cargando vuelos...</div>
+<ng-container *ngIf="results$ | async as res">
 
-  <div class="grid gap-4">
-  <div *ngFor="let flight of flights" class="card-brand p-4">
-    <div class="flex items-center justify-between">
-      <div>
-        <h3 class="text-lg font-semibold">{{ flight.origin }} → {{ flight.destination }}</h3>
-        <p class="text-sm text-gray-500">Aerolínea: {{ flight.airline }}</p>
+  <!-- LOADING -->
+  <div *ngIf="loading$obs | async" class="py-10 flex flex-col items-center text-gray-500">
+    <div class="w-10 h-10 border-4 border-[#4E63D9] border-t-transparent rounded-full animate-spin"></div>
+    <p class="mt-3 text-sm font-medium">Buscando vuelos disponibles...</p>
+  </div>
+
+  <!-- EMPTY STATE -->
+  <div *ngIf="!(loading$obs | async) && (res.total ?? 0) === 0" class="py-14 text-center">
+    <div class="text-6xl mb-3">✈️</div>
+    <h3 class="text-lg font-semibold text-gray-700">Sin resultados</h3>
+    <p class="text-gray-500 text-sm">No encontramos vuelos para los criterios seleccionados.</p>
+  </div>
+
+ <!-- RESULTS SECTION -->
+<div
+  *ngIf="!(loading$obs | async) && (res.total ?? 0) > 0"
+  class="grid grid-cols-1 lg:grid-cols-3 gap-8"
+>
+
+  <!-- LEFT COLUMN (RESULTS) -->
+  <div class="lg:col-span-2 space-y-6">
+
+    <!-- Header de resultados -->
+    <div class="flex flex-wrap items-center justify-between gap-4 bg-[#F2F2F2] p-4 rounded-xl text-gray-600 shadow-sm">
+      <div class="flex-1" *ngIf="sortOptionObs | async as currentSort">
+        <div class="font-medium">
+          Mostrando
+          {{
+            (((res.page || (page$obs | async) || 1) - 1) * (res.pageSize || pageSize) + 1)
+          }}
+          -
+          {{
+            Math.min(
+              (res.page || (page$obs | async) || 1) * (res.pageSize || pageSize),
+              res.total || 0
+            )
+          }}
+          de {{ res.total || 0 }} vuelos
+        </div>
+
+        <!-- Ordenar -->
+        <div class="mt-2 flex items-center gap-2 text-sm">
+          <label for="sort-control" class="text-gray-500">Ordenar por:</label>
+          <div class="relative">
+            <select
+              id="sort-control"
+              class="appearance-none pl-3 pr-8 py-1 rounded-lg bg-white text-gray-700 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#4E63D9]"
+              (change)="setSort($any($event.target).value)"
+            >
+              <option *ngFor="let opt of sortOptions" [value]="opt.value" [selected]="currentSort === opt.value">
+                {{ opt.label }}
+              </option>
+            </select>
+            <span class="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-500">▾</span>
+          </div>
+        </div>
       </div>
-      <div class="text-right">
-        <div class="text-xl font-bold">{{ flight.price.total }} {{ flight.price.currency }}</div>
-        <div class="text-sm text-gray-500">{{ flight.duration || '—' }}</div>
+
+      <!-- Mini paginador superior -->
+      <div class="flex items-center gap-2">
+        <button class="px-3 py-1 rounded-lg bg-[#4E63D9] text-white text-sm hover:bg-[#3d4fbd] disabled:opacity-40"
+                (click)="prevPage()" [disabled]="(page$obs | async) === 1">
+          Prev
+        </button>
+        <span class="text-sm">Página {{ res.page || (page$obs | async) || 1 }} / {{ ((res.total || 0) / (res.pageSize || pageSize)) | number:'1.0-0' }}</span>
+        <button class="px-3 py-1 rounded-lg bg-[#4E63D9] text-white text-sm hover:bg-[#3d4fbd] disabled:opacity-40"
+          (click)="nextPage()" [disabled]="((page$obs | async) || 1) === ((pages$ | async)?.length || 1)">
+          Next
+        </button>
       </div>
     </div>
 
-    <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-gray-600">
-      <div>Salida: {{ flight.departureDate }}</div>
-      <div>Llegada: {{ flight.arrivalDate }}</div>
+    <!-- LISTA DE VUELOS -->
+    <div class="grid gap-4">
+      <div *ngFor="let flight of res.data; let i = index; trackBy: trackByFlight"
+           class="p-5 bg-white rounded-2xl shadow-md border border-[#F2F2F2] hover:shadow-lg transition">
+
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between">
+
+          <!-- Info principal -->
+          <div>
+            <h3 class="text-xl font-semibold text-[#4E63D9]">
+              {{ flight.origin }} → {{ flight.destination }}
+            </h3>
+            <p class="text-sm text-gray-500 mt-1">
+              Aerolínea: <span class="font-medium">{{ flight.airline }}</span>
+            </p>
+            <p class="text-sm text-gray-500">
+              Vuelo: <span class="font-medium">{{ flightNumber(flight) }}</span>
+            </p>
+          </div>
+
+          <!-- Precio -->
+          <div class="text-right mt-3 sm:mt-0">
+            <div class="text-2xl font-bold text-[#4ED9A6]">
+              {{ flight.price.total }} {{ flight.price.currency }}
+            </div>
+            <div class="text-sm text-gray-500">{{ flight.duration || '—' }}</div>
+          </div>
+        </div>
+
+        <!-- Horarios -->
+        <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+          <div class="bg-[#F2F2F2] p-3 rounded-xl">
+            <span class="font-medium text-gray-700">Salida:</span>
+            <div class="text-gray-600">{{ flight.departureDate }}</div>
+          </div>
+
+          <div class="bg-[#F2F2F2] p-3 rounded-xl">
+            <span class="font-medium text-gray-700">Llegada:</span>
+            <div class="text-gray-600">{{ flight.arrivalDate }}</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- PAGINADOR INFERIOR -->
+    <div class="mt-8 flex flex-wrap justify-center gap-2">
+      <button class="px-3 py-1 rounded-lg bg-[#4E63D9] text-white text-sm hover:bg-[#3d4fbd] disabled:opacity-40"
+              (click)="prevPage()" [disabled]="(page$obs | async)===1">Prev</button>
+
+      <ng-container *ngIf="pages$ | async as pages">
+        <button
+          *ngFor="let p of pages"
+          class="px-3 py-1 rounded-lg text-sm transition"
+          [ngClass]="{
+            'bg-[#4E63D9] text-white shadow-md': p===(res.page || (page$obs | async) || 1),
+            'bg-white text-gray-700 border border-gray-300 hover:bg-gray-100': p!==(res.page || (page$obs | async) || 1)
+          }"
+          (click)="goToPage(p)"
+        >
+          {{ p }}
+        </button>
+      </ng-container>
+
+      <button class="px-3 py-1 rounded-lg bg-[#4E63D9] text-white text-sm hover:bg-[#3d4fbd] disabled:opacity-40"
+              (click)="nextPage()" [disabled]="((page$obs | async) || 1) === ((pages$ | async)?.length || 1)">Next</button>
     </div>
   </div>
+
+  <!-- RIGHT COLUMN (CHEAPEST DATES) -->
+  <div>
+    <section class="bg-[#F8FAFF] p-5 rounded-2xl border border-[#E0E7FF] shadow-sm">
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h4 class="text-lg font-semibold text-[#4E63D9]">Fechas más económicas</h4>
+          <p class="text-sm text-gray-500">Basado en la búsqueda actual (vuelos directos).</p>
+        </div>
+
+        <div *ngIf="cheapestLoading$obs | async" class="flex items-center gap-2 text-sm text-gray-500">
+          <div class="w-4 h-4 border-2 border-[#4E63D9] border-t-transparent rounded-full animate-spin"></div>
+          Consultando...
+        </div>
+      </div>
+
+      <ng-container *ngIf="cheapestDates$ | async as cheapest">
+        <div *ngIf="cheapest.length; else noCheapestDates" class="mt-4 grid gap-4">
+          <div *ngFor="let cd of cheapest; trackBy: trackByCheapest" class="p-4 bg-white rounded-xl border border-[#E0E7FF] shadow-sm">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm text-gray-500">Salida</p>
+                <p class="text-base font-semibold text-gray-800">{{ cd.departureDate | date:'mediumDate' }}</p>
+                <p class="text-xs text-gray-500">{{ cd.origin }} → {{ cd.destination }}</p>
+              </div>
+              <div class="text-right">
+                <p class="text-sm text-gray-500">Desde</p>
+                <p class="text-2xl font-bold text-[#4ED9A6]">
+                  {{ cd.price | number:'1.0-0' }} {{ cd.currency }}
+                </p>
+              </div>
+            </div>
+
+            <div *ngIf="cd.returnDate" class="mt-3 text-sm text-gray-500">
+              Regreso estimado:
+              <span class="font-medium text-gray-700">{{ cd.returnDate | date:'mediumDate' }}</span>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+
+      <ng-template #noCheapestDates>
+        <p class="mt-4 text-sm text-gray-500">No se encontraron fechas alternativas económicas para esta ruta.</p>
+      </ng-template>
+
+    </section>
+  </div>
+
 </div>
+
+
+</ng-container>

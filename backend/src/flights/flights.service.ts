@@ -27,7 +27,12 @@ export class FlightsService {
     private readonly amadeusService: AmadeusService,
   ) {}
 
-  async searchFlights(searchDto: SearchFlightDto): Promise<Flight[]> {
+  async searchFlights(searchDto: SearchFlightDto): Promise<{
+    data: Flight[];
+    total: number;
+    page: number;
+    pageSize: number;
+  }> {
     const params: Record<string, string> = {
       originLocationCode: searchDto.origin,
       destinationLocationCode: searchDto.destination,
@@ -44,7 +49,21 @@ export class FlightsService {
     try {
       const response = await this.amadeusService.get<unknown>(endpoint, params);
       const payload = extractPayload(response);
-      return parseFlights(payload);
+      const allFlights = parseFlights(payload);
+
+      const page =
+        typeof searchDto.page === 'number' && searchDto.page >= 1
+          ? searchDto.page
+          : 1;
+      const limit =
+        typeof searchDto.limit === 'number' && searchDto.limit >= 1
+          ? searchDto.limit
+          : 5;
+      const total = allFlights.length;
+      const start = (page - 1) * limit;
+      const data = allFlights.slice(start, start + limit);
+
+      return { data, total, page, pageSize: limit };
     } catch (err: unknown) {
       const { status, data } = extractProviderError(err);
 
@@ -54,8 +73,18 @@ export class FlightsService {
         error: err,
       });
 
+      const fallbackLimit =
+        typeof searchDto.limit === 'number' && searchDto.limit >= 1
+          ? searchDto.limit
+          : 5;
+
       if (this.shouldReturnEmpty(status)) {
-        return [] as Flight[];
+        return { data: [], total: 0, page: 1, pageSize: fallbackLimit } as {
+          data: Flight[];
+          total: number;
+          page: number;
+          pageSize: number;
+        };
       }
 
       throw new HttpException(
